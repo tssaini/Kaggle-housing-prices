@@ -33,7 +33,7 @@ def transformData(housing_data):
     train_set_y = train_set_reduced["SalePrice"].copy()
     return train_set_X, train_set_y
 
-
+#Testing ML pipelines
 def attempt1():
     train_val_set, test_set = load_housing_data()
 
@@ -74,14 +74,13 @@ def attempt1():
 
 
 
-def attempt2():
-
-    data = pd.read_csv("train.csv")
+def get_xgboost_model():
+    data = pd.read_csv(HOUSING_TRAIN_DATA)
     data.dropna(axis=0, subset=['SalePrice'], inplace=True)
     y = data.SalePrice
     X = data.drop(['SalePrice'], axis=1).select_dtypes(exclude=['object'])
 
-    train_X, test_X, train_y, test_y = train_test_split(X, y, test_size=0.2)
+    train_X, test_X, train_y, test_y = train_test_split(X, y, test_size=0.2, random_state=40)
 
     imputer = SimpleImputer(strategy="median")
     train_X = imputer.fit_transform(train_X)
@@ -93,8 +92,21 @@ def attempt2():
     # make predictions
     predictions = my_model.predict(test_X)
     print("XGBoost : ", np.sqrt(mean_squared_error(predictions, test_y)))
+    return my_model
 
+def create_submission_file(test_data, predictions):
+    my_submission = pd.DataFrame({'Id': test_data.Id, 'SalePrice': predictions})
+    my_submission.to_csv('submission.csv', index=False)
 
 if __name__ == "__main__":
     attempt1()
-    attempt2()
+
+    test_data = pd.read_csv(HOUSING_TEST_DATA)
+    test_data = test_data.select_dtypes(exclude=['object'])
+    imputer = SimpleImputer(strategy="median")
+    test_X = imputer.fit_transform(test_data)
+
+    xgboost_model = get_xgboost_model()
+    predictions = xgboost_model.predict(test_X)
+    
+    create_submission_file(test_data, predictions)
