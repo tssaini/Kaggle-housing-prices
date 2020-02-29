@@ -87,7 +87,7 @@ def attempt2():
     train_X = imputer.fit_transform(train_X)
     test_X = imputer.transform(test_X)
 
-    my_model = XGBRegressor(n_estimators=1000)
+    my_model = XGBRegressor(n_estimators=1000, learning_rate=0.05)
     my_model.fit(train_X, train_y, early_stopping_rounds=5, eval_set=[(test_X, test_y)], verbose=False)
 
     # make predictions
